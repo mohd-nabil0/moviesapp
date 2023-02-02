@@ -10,7 +10,7 @@ import {useNavigation} from '@react-navigation/native';
 import defaultStyles from '../config/styles';
 
 const validationSchema = Yup.object().shape({
-  email: Yup.string().required().email().label('Email'),
+  email: Yup.string().max(50).required().email().label('Email'),
   password: Yup.string()
     .required()
     .min(8)

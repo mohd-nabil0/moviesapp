@@ -4,10 +4,10 @@ import reducer from './Reducer';
 const middlewares = [
   /* other middlewares */
 ];
-if (__DEV__) {
-  const createDebugger = require('redux-flipper').default;
-  middlewares.push(createDebugger());
-}
+// if (__DEV__) {
+//   const createDebugger = require('redux-flipper').default;
+//   middlewares.push(createDebugger());
+// }
 
 applyMiddleware;
 
