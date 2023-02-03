@@ -34,11 +34,12 @@ const SplashScreen = props => {
     <ImageBackground
       style={defaultStyles.imgBackground}
       resizeMode="cover"
+      testID="screen"
       source={require('../assets/background.jpeg')}>
       <Screen style={styles.container}>
         <Image style={styles.logo} source={require('../assets/logo-red.png')} />
         <View style={styles.indicatorContainer}>
-          <ActivityIndicator size={'large'} />
+          <ActivityIndicator size={'large'} testID="activity-indicator" />
         </View>
       </Screen>
     </ImageBackground>

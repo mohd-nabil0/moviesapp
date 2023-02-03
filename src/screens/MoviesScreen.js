@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useRef} from 'react';
 import {
   View,
   FlatList,
@@ -10,7 +10,6 @@ import {
 } from 'react-native';
 import {useEffect} from 'react';
 import {useState} from 'react';
-import {fetchMovies} from '../api/Api';
 import MovieItem from '../components/MovieItem';
 import Screen from '../components/Screen';
 import colors from '../config/colors';
@@ -23,23 +22,28 @@ import AppText from '../components/Text';
 import {LANGUAGES} from '../constants/Strings';
 import {useTranslation} from 'react-i18next';
 import '../translation/i18n';
+import {getMovies} from '../store/MovieReducer';
+import {useSelector, useDispatch} from 'react-redux';
 
 const APPBAR_HEIGHT = Platform.OS === 'ios' ? 50 : 56;
 
 const MovieScreen = props => {
-  const [movies, setMovies] = useState([]);
-  const [page, setpage] = useState(1);
-  const [totalPages, setTotalpages] = useState();
-  const [loading, setLoading] = useState(true);
+  const {movies, page, totalPages, loading} = useSelector(
+    state => state.movies,
+  );
+  const dispatch = useDispatch();
+
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedLanguage, setSelectedLangauge] = useState();
+  const flatListRef = useRef();
+  const pageCalled = useRef(1);
 
   let onEndReachedCalledDuringMomentum = true;
 
   const {t, i18n} = useTranslation();
 
   useEffect(() => {
-    if (selectedLanguage) loadMovies();
+    if (selectedLanguage) loadMovies(movies.length > 0);
   }, [selectedLanguage]);
 
   useEffect(() => {
@@ -58,38 +62,36 @@ const MovieScreen = props => {
     setModalVisible(false);
 
     if (selectedLanguage.code !== option.code) {
-      setMovies([]);
-      setpage(1);
       save(PreferenceKeys.LANGUAGE, JSON.stringify(option));
       i18n
         .changeLanguage(option.code)
-        .then(() => setSelectedLangauge(option))
+        .then(() => {
+          toTop();
+          setSelectedLangauge(option);
+          pageCalled.current = 1;
+        })
         .catch(err => console.log(err));
     }
   };
 
   const handleMore = () => {
-    if (!onEndReachedCalledDuringMomentum) {
-      setLoading(true);
+    if (!onEndReachedCalledDuringMomentum && pageCalled.current < page) {
+      console.log('Handle-More', page);
+      pageCalled.current = pageCalled.current + 1;
       loadMovies();
       onEndReachedCalledDuringMomentum = true;
     }
   };
 
-  const loadMovies = async () => {
+  const loadMovies = async languageChange => {
     if (totalPages && page >= totalPages) return;
 
-    const {result, error} = await fetchMovies(page, selectedLanguage.code);
-    setLoading(false);
-
-    if (error) return alert(error);
-
-    const _m = result?.results || [];
-    setMovies([...movies, ..._m]);
-
-    setTotalpages(result?.total_pages || 1);
-    setpage(prev => prev + 1);
+    dispatch(
+      getMovies({page, languageCode: selectedLanguage.code, languageChange}),
+    );
   };
+
+  const handleHeader = () => <View style={styles.header} />;
 
   const handleFooter = () => {
     return (
@@ -102,6 +104,10 @@ const MovieScreen = props => {
   };
 
   const renderItem = ({item}) => <MovieItem movie={item} />;
+
+  const toTop = () => {
+    flatListRef.current.scrollToOffset({animated: true, offset: 0});
+  };
 
   return (
     <ImageBackground
@@ -119,12 +125,17 @@ const MovieScreen = props => {
       )}
       <Screen style={styles.container}>
         <View style={styles.appBar}>
-          <AppText style={styles.titleText}>{t('homeTitle')} </AppText>
-          <TouchableOpacity onPress={() => setModalVisible(true)}>
+          <AppText style={styles.titleText} testID={'headerTitle'}>
+            {t('homeTitle')}{' '}
+          </AppText>
+          <TouchableOpacity
+            onPress={() => setModalVisible(true)}
+            testID="language-icon">
             <Icon name="language-sharp" size={24} color={colors.white} />
           </TouchableOpacity>
         </View>
         <FlatList
+          ref={flatListRef}
           style={styles.list}
           data={movies}
           renderItem={renderItem}
@@ -134,7 +145,8 @@ const MovieScreen = props => {
           }}
           keyExtractor={(item, index) => item.id}
           onEndReached={handleMore}
-          onEndReachedThreshold={1.5}
+          onEndReachedThreshold={0.75}
+          ListHeaderComponent={handleHeader}
           ListFooterComponent={handleFooter}
           showsVerticalScrollIndicator={false}
         />
@@ -168,8 +180,12 @@ const styles = StyleSheet.create({
     marginEnd: 20,
   },
   list: {
-    paddingTop: APPBAR_HEIGHT + 10,
+    // paddingTop: APPBAR_HEIGHT + 10,
     paddingHorizontal: 3,
+    // paddingBottom: 50,
+  },
+  header: {
+    height: APPBAR_HEIGHT + 10,
   },
 });
 export default MovieScreen;

@@ -59,7 +59,9 @@ const BottomSheetModal = ({
 
   return (
     <Modal visible={visible} transparent>
-      <TouchableWithoutFeedback onPress={() => handlePressBackdrop()}>
+      <TouchableWithoutFeedback
+        onPress={() => handlePressBackdrop()}
+        testID="backdrop">
         <View style={styles.backdrop}>
           <View style={styles.modalContainer}>
             <AppText style={styles.modalContainerTitle}>{headerTitle}</AppText>
@@ -75,6 +77,7 @@ const BottomSheetModal = ({
             </View>
             <View style={styles.button}>
               <Button
+                testID="change-language"
                 title={t('done')}
                 onPress={() => handlePressButton()}
                 disable={false}
