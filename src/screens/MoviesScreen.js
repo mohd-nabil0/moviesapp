@@ -1,4 +1,4 @@
-import React, {useRef} from 'react';
+import React, {useRef, useEffect, useState} from 'react';
 import {
   View,
   FlatList,
@@ -8,8 +8,6 @@ import {
   Platform,
   TouchableOpacity,
 } from 'react-native';
-import {useEffect} from 'react';
-import {useState} from 'react';
 import MovieItem from '../components/MovieItem';
 import Screen from '../components/Screen';
 import colors from '../config/colors';
