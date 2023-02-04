@@ -7,14 +7,16 @@ import {
   ImageBackground,
   Platform,
   TouchableOpacity,
+  I18nManager,
 } from 'react-native';
+import RNRestart from 'react-native-restart'; // Import package from node modules
 import MovieItem from '../components/MovieItem';
 import Screen from '../components/Screen';
 import colors from '../config/colors';
 import defaultStyles from '../config/styles';
 import Icon from 'react-native-vector-icons/Ionicons';
 import BottomSheetModal from '../components/BottomSheetModal';
-import {get, save} from '../utils/SharedPreferences';
+import {save} from '../utils/SharedPreferences';
 import PreferenceKeys from '../constants/PreferenceKeys';
 import AppText from '../components/Text';
 import {LANGUAGES} from '../constants/Strings';
@@ -29,46 +31,30 @@ const MovieScreen = props => {
   const {movies, page, totalPages, loading} = useSelector(
     state => state.movies,
   );
+  const {selectedLanguage} = useSelector(state => state.languages);
+
   const dispatch = useDispatch();
 
   const [modalVisible, setModalVisible] = useState(false);
-  const [selectedLanguage, setSelectedLangauge] = useState();
+
   const flatListRef = useRef();
   const pageCalled = useRef(1);
 
   let onEndReachedCalledDuringMomentum = true;
 
-  const {t, i18n} = useTranslation();
+  const {t} = useTranslation();
 
   useEffect(() => {
     if (selectedLanguage) loadMovies(movies.length > 0);
   }, [selectedLanguage]);
 
-  useEffect(() => {
-    fetchLangauge();
-  }, []);
-
-  const fetchLangauge = async () => {
-    const lang = await get(PreferenceKeys.LANGUAGE);
-    if (lang) {
-      const _lang = JSON.parse(lang);
-      setSelectedLangauge(_lang);
-    }
-  };
-
-  const hanleLanguageSelection = option => {
+  const hanleLanguageSelection = async option => {
     setModalVisible(false);
 
     if (selectedLanguage.code !== option.code) {
-      save(PreferenceKeys.LANGUAGE, JSON.stringify(option));
-      i18n
-        .changeLanguage(option.code)
-        .then(() => {
-          toTop();
-          setSelectedLangauge(option);
-          pageCalled.current = 1;
-        })
-        .catch(err => console.log(err));
+      await save(PreferenceKeys.LANGUAGE, JSON.stringify(option));
+      await I18nManager.forceRTL(option.code === LANGUAGES[1].code);
+      RNRestart.restart();
     }
   };
 

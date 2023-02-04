@@ -41,7 +41,7 @@ const BottomSheetModal = ({
           styles.optionContainer,
           borderBottom && styles.optionContainerBottomWidth,
         ]}>
-        <AppText style={styles.optionText}>{option.label}</AppText>
+        <AppText style={styles.optionText}>{t(option.label)}</AppText>
         <View style={styles.optionIcon}>
           <Icon
             name={
@@ -58,7 +58,7 @@ const BottomSheetModal = ({
   };
 
   return (
-    <Modal visible={visible} transparent>
+    <Modal visible={visible} transparent testID="modalContainer">
       <TouchableWithoutFeedback
         onPress={() => handlePressBackdrop()}
         testID="backdrop">
@@ -112,12 +112,14 @@ const styles = StyleSheet.create({
     ...defaultStyle,
     fontSize: 18,
     fontWeight: '700',
+    textAlign: 'left',
   },
   optionText: {
     width: '85%',
     color: colors.black,
     fontSize: 15,
     fontWeight: '400',
+    textAlign: 'left',
   },
   optionIcon: {
     alignSelf: 'center',

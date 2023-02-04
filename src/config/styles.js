@@ -14,5 +14,6 @@ export default {
     color: colors.dark,
     fontSize: 15,
     fontFamily: Platform.OS === 'android' ? 'Roboto' : 'Avenir',
+    textAlign: 'left',
   },
 };

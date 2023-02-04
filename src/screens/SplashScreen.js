@@ -5,31 +5,45 @@ import {
   ImageBackground,
   StyleSheet,
   View,
+  I18nManager,
 } from 'react-native';
 import defaultStyles from '../config/styles';
 import Screen from '../components/Screen';
 import {useDispatch, useSelector} from 'react-redux';
 import {getUser} from '../store/UserReducer';
 import {useNavigation} from '@react-navigation/native';
+import {getLanguage} from '../store/LanguageReducer';
+import {useTranslation} from 'react-i18next';
+import {LANGUAGES} from '../constants/Strings';
 
 const SplashScreen = props => {
+  const {i18n} = useTranslation();
   const navigation = useNavigation();
-  const {user, loading} = useSelector(state => state.user);
   const dispatch = useDispatch();
+
+  const state = useSelector(state => state);
+  const {user, loading} = state.user;
+  const {selectedLanguage, updatingLanguage} = state.languages;
 
   useEffect(() => {
     dispatch(getUser());
+    dispatch(getLanguage());
   }, []);
 
   useEffect(() => {
-    if (!loading) {
+    handleLanguage();
+  }, [user, loading, updatingLanguage]);
+
+  const handleLanguage = () => {
+    if (!loading && !updatingLanguage) {
+      i18n.changeLanguage(selectedLanguage.code);
+      I18nManager.forceRTL(selectedLanguage.code === LANGUAGES[1].code);
       navigation.reset({
         index: 0,
         routes: [{name: user ? 'MoviesScreen' : 'LoginScreen'}],
       });
     }
-  }, [user, loading]);
-
+  };
   return (
     <ImageBackground
       style={defaultStyles.imgBackground}

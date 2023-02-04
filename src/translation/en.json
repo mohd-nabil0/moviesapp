@@ -1,5 +1,17 @@
 {
   "translation": {
+    "email": "Email",
+    "emailRequired": "Email is a required field",
+    "email_50": "Email must be at most 50 characters",
+
+    "password": "Password",
+    "passwordRequired": "Password is a required field",
+    "password_8": "Password must be at least 8 characters",
+    "password_15": "Password must be at most 15 characters",
+    "passwordUpperCase": "Must contain one uppercase",
+    "passwordSpecialCharacter": "Must contain one special case character",
+
+    "login": "Login",
     "homeTitle": "Movie List",
     "selectLanguage": "Select Language",
     "done": "Done"

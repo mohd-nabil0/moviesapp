@@ -3,8 +3,12 @@ import {View, TextInput, StyleSheet, Platform} from 'react-native';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 
 import defaultStyles from '../config/styles';
+import {useTranslation} from 'react-i18next';
+import {LANGUAGES} from '../constants/Strings';
 
-function AppTextInput({icon, width = '100%', ...otherProps}) {
+function AppTextInput({icon, width = '100%', placeholder, ...otherProps}) {
+  const {t, i18n} = useTranslation();
+
   return (
     <View style={[styles.container, {width}]}>
       {icon && (
@@ -17,7 +21,8 @@ function AppTextInput({icon, width = '100%', ...otherProps}) {
       )}
       <TextInput
         placeholderTextColor={defaultStyles.colors.medium}
-        style={{...defaultStyles.text, ...styles.text}}
+        style={{...defaultStyles.text, ...styles.text(i18n.language)}}
+        placeholder={t(placeholder)}
         {...otherProps}
       />
     </View>
@@ -40,9 +45,11 @@ const styles = StyleSheet.create({
   icon: {
     marginRight: 10,
   },
-  text: {
+  text: lang => ({
+    width: '90%',
     padding: Platform.OS === 'android' ? 7 : 10,
-  },
+    textAlign: lang === LANGUAGES[1].code ? 'right' : 'left',
+  }),
 });
 
 export default AppTextInput;
