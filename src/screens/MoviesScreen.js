@@ -1,31 +1,30 @@
-import React, {useRef, useEffect, useState} from 'react';
+import {useNavigation} from '@react-navigation/native';
+import React, {useEffect, useRef, useState} from 'react';
+import {useTranslation} from 'react-i18next';
 import {
-  View,
+  Alert,
   FlatList,
-  ActivityIndicator,
-  StyleSheet,
   ImageBackground,
-  Platform,
+  StyleSheet,
   TouchableOpacity,
-  I18nManager,
+  View,
 } from 'react-native';
-import RNRestart from 'react-native-restart'; // Import package from node modules
+import Icon from 'react-native-vector-icons/Ionicons';
+import {useDispatch, useSelector} from 'react-redux';
+import BottomSheetModal from '../components/BottomSheetModal';
+import Loader from '../components/Loader';
 import MovieItem from '../components/MovieItem';
 import Screen from '../components/Screen';
-import colors from '../config/colors';
-import defaultStyles from '../config/styles';
-import Icon from 'react-native-vector-icons/Ionicons';
-import BottomSheetModal from '../components/BottomSheetModal';
-import {save} from '../utils/SharedPreferences';
-import PreferenceKeys from '../constants/PreferenceKeys';
 import AppText from '../components/Text';
-import {LANGUAGES} from '../constants/Strings';
-import {useTranslation} from 'react-i18next';
-import '../translation/i18n';
+import PreferenceKeys from '../constants/PreferenceKeys';
+import {APPBAR_HEIGHT, LANGUAGES} from '../constants/Strings';
+import {LOGIN_SCREEN} from '../navigations/Routes';
 import {getMovies} from '../store/MovieReducer';
-import {useSelector, useDispatch} from 'react-redux';
-
-const APPBAR_HEIGHT = Platform.OS === 'ios' ? 50 : 56;
+import colors from '../theme/colors';
+import defaultStyles from '../theme/styles';
+import '../translation/i18n';
+import {remove} from '../utils/SharedPreferences';
+import {changeLanguage, restartAPP} from '../utils/helper';
 
 const MovieScreen = props => {
   const {movies, page, totalPages, loading} = useSelector(
@@ -37,36 +36,42 @@ const MovieScreen = props => {
 
   const [modalVisible, setModalVisible] = useState(false);
 
-  const flatListRef = useRef();
   const pageCalled = useRef(1);
 
   let onEndReachedCalledDuringMomentum = true;
 
+  const navigation = useNavigation();
   const {t} = useTranslation();
 
   useEffect(() => {
     if (selectedLanguage) loadMovies(movies.length > 0);
   }, [selectedLanguage]);
 
+  //Function 'hanleLanguageSelection', will close the language modal
+  //and force apply the selected langauge text on the screen.
   const hanleLanguageSelection = async option => {
     setModalVisible(false);
-
-    if (selectedLanguage.code !== option.code) {
-      await save(PreferenceKeys.LANGUAGE, JSON.stringify(option));
-      await I18nManager.forceRTL(option.code === LANGUAGES[1].code);
-      RNRestart.restart();
-    }
+    await changeLanguage(selectedLanguage, option);
+    restartAPP();
   };
 
+  //Function 'handleMore', check 'onEndReachedCalledDuringMomentum',
+  //that scrolled the 3/4 screen of the list and 'pageCalled' will not
+  //allowed the recall of the function.
   const handleMore = () => {
     if (!onEndReachedCalledDuringMomentum && pageCalled.current < page) {
-      console.log('Handle-More', page);
+      // console.log('Handle-More', page);
       pageCalled.current = pageCalled.current + 1;
       loadMovies();
       onEndReachedCalledDuringMomentum = true;
     }
   };
 
+  //Function 'loadMovies' that takes in a parameter languageChange.
+  //It checks if the value of totalPages exists and page is greater
+  //than or equal to totalPages, in which case it returns without
+  //doing anything. If not, it dispatches the action getMovies with
+  //parameters page, languageCode and languageChange.
   const loadMovies = async languageChange => {
     if (totalPages && page >= totalPages) return;
 
@@ -75,23 +80,37 @@ const MovieScreen = props => {
     );
   };
 
+  //Function 'handleHeader', show extra space header for design.
   const handleHeader = () => <View style={styles.header} />;
 
+  //Function 'handleFooter', show 'Loader' while fetching more data from server.
   const handleFooter = () => {
-    return (
-      loading && (
-        <View>
-          <ActivityIndicator size={'large'} />
-        </View>
-      )
-    );
+    return loading && <Loader />;
   };
 
+  //Function 'handleLogout', remove saved user data and naviagte to 'LoginScreen'.
+  const handleLogout = () => {
+    remove(PreferenceKeys.USER);
+    navigation.reset({
+      index: 0,
+      routes: [{name: LOGIN_SCREEN}],
+    });
+  };
+
+  //Function 'showAlert', will popup confirmation from the user to
+  //logout. with the title and two options 'Yes' & 'No'.
+  const showAlert = () => {
+    Alert.alert(t('logoutText'), '', [
+      {
+        text: t('yes'),
+        onPress: () => handleLogout(),
+      },
+      {text: t('no')},
+    ]);
+  };
+
+  //Grid item to show Movie this image and title
   const renderItem = ({item}) => <MovieItem movie={item} />;
-
-  const toTop = () => {
-    flatListRef.current.scrollToOffset({animated: true, offset: 0});
-  };
 
   return (
     <ImageBackground
@@ -113,13 +132,18 @@ const MovieScreen = props => {
             {t('homeTitle')}{' '}
           </AppText>
           <TouchableOpacity
+            onPress={() => showAlert()}
+            testID="logout-icon"
+            style={styles.logoutContainer}>
+            <Icon name="power" size={24} color={colors.white} />
+          </TouchableOpacity>
+          <TouchableOpacity
             onPress={() => setModalVisible(true)}
             testID="language-icon">
             <Icon name="language-sharp" size={24} color={colors.white} />
           </TouchableOpacity>
         </View>
         <FlatList
-          ref={flatListRef}
           style={styles.list}
           data={movies}
           renderItem={renderItem}
@@ -164,12 +188,13 @@ const styles = StyleSheet.create({
     marginEnd: 20,
   },
   list: {
-    // paddingTop: APPBAR_HEIGHT + 10,
     paddingHorizontal: 3,
-    // paddingBottom: 50,
   },
   header: {
     height: APPBAR_HEIGHT + 10,
+  },
+  logoutContainer: {
+    marginHorizontal: 10,
   },
 });
 export default MovieScreen;

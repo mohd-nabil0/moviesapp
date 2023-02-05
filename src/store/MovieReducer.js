@@ -1,5 +1,5 @@
 import {createSlice, createAsyncThunk} from '@reduxjs/toolkit';
-import {fetchMovies} from '../api/Api';
+import {fetchMovies} from '../netwrok/Api';
 
 //async actions
 const getMovies = createAsyncThunk(

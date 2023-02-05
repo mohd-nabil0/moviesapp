@@ -2,7 +2,7 @@ import React from 'react';
 import {View, TextInput, StyleSheet, Platform} from 'react-native';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 
-import defaultStyles from '../config/styles';
+import defaultStyles from '../theme/styles';
 import {useTranslation} from 'react-i18next';
 import {LANGUAGES} from '../constants/Strings';
 

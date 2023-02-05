@@ -1,20 +1,21 @@
+import {useNavigation} from '@react-navigation/native';
 import React, {useEffect} from 'react';
+import {useTranslation} from 'react-i18next';
 import {
   ActivityIndicator,
   Image,
   ImageBackground,
   StyleSheet,
   View,
-  I18nManager,
 } from 'react-native';
-import defaultStyles from '../config/styles';
-import Screen from '../components/Screen';
 import {useDispatch, useSelector} from 'react-redux';
-import {getUser} from '../store/UserReducer';
-import {useNavigation} from '@react-navigation/native';
+import Screen from '../components/Screen';
+import {LOGIN_SCREEN, MOVIES_SCREEN} from '../navigations/Routes';
 import {getLanguage} from '../store/LanguageReducer';
-import {useTranslation} from 'react-i18next';
-import {LANGUAGES} from '../constants/Strings';
+import {getUser} from '../store/UserReducer';
+import defaultStyles from '../theme/styles';
+import {setDefaultLanguage} from '../utils/helper';
+import Loader from '../components/Loader';
 
 const SplashScreen = props => {
   const {i18n} = useTranslation();
@@ -34,16 +35,18 @@ const SplashScreen = props => {
     handleLanguage();
   }, [user, loading, updatingLanguage]);
 
+  //Function 'handleLanguage', apply the default language and
+  //navigate to LoginScreen or MoviesScreen based on the user's session
   const handleLanguage = () => {
     if (!loading && !updatingLanguage) {
-      i18n.changeLanguage(selectedLanguage.code);
-      I18nManager.forceRTL(selectedLanguage.code === LANGUAGES[1].code);
+      setDefaultLanguage(i18n, selectedLanguage);
       navigation.reset({
         index: 0,
-        routes: [{name: user ? 'MoviesScreen' : 'LoginScreen'}],
+        routes: [{name: user ? MOVIES_SCREEN : LOGIN_SCREEN}],
       });
     }
   };
+
   return (
     <ImageBackground
       style={defaultStyles.imgBackground}
@@ -53,7 +56,7 @@ const SplashScreen = props => {
       <Screen style={styles.container}>
         <Image style={styles.logo} source={require('../assets/logo-red.png')} />
         <View style={styles.indicatorContainer}>
-          <ActivityIndicator size={'large'} testID="activity-indicator" />
+          <Loader />
         </View>
       </Screen>
     </ImageBackground>

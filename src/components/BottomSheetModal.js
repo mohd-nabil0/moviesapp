@@ -6,8 +6,8 @@ import {
   TouchableOpacity,
   StyleSheet,
 } from 'react-native';
-import defaultStyle from '../config/styles';
-import colors from '../config/colors';
+import defaultStyle from '../theme/styles';
+import colors from '../theme/colors';
 import AppText from './Text';
 import Icon from 'react-native-vector-icons/Ionicons';
 import Button from '../components/Button';
@@ -66,7 +66,7 @@ const BottomSheetModal = ({
           <View style={styles.modalContainer}>
             <AppText style={styles.modalContainerTitle}>{headerTitle}</AppText>
 
-            <View style={{marginVertical: 10}}>
+            <View style={styles.margin10}>
               {options.map((option, index) => (
                 <Option
                   key={index.toString()}
@@ -139,6 +139,9 @@ const styles = StyleSheet.create({
   button: {
     width: 180,
     alignSelf: 'center',
+  },
+  margin10: {
+    marginVertical: 10,
   },
 });
 

@@ -1,6 +1,7 @@
 {
   "translation": {
     "email": "Email",
+    "emailValid": "Email must be a valid email",
     "emailRequired": "Email is a required field",
     "email_50": "Email must be at most 50 characters",
 
@@ -14,6 +15,10 @@
     "login": "Login",
     "homeTitle": "Movie List",
     "selectLanguage": "Select Language",
-    "done": "Done"
+    "done": "Done",
+
+    "logoutText": "Do you want to logout?",
+    "yes": "Yes",
+    "no": "No"
   }
 }

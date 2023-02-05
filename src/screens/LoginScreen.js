@@ -1,42 +1,45 @@
+import {useNavigation} from '@react-navigation/native';
 import React, {useState} from 'react';
+import {useTranslation} from 'react-i18next';
 import {
-  StyleSheet,
   Image,
-  View,
   ImageBackground,
-  I18nManager,
+  StyleSheet,
   TouchableOpacity,
+  View,
 } from 'react-native';
-import * as Yup from 'yup';
 import Icon from 'react-native-vector-icons/Ionicons';
-import RNRestart from 'react-native-restart'; // Import package from node modules
+import {useDispatch, useSelector} from 'react-redux';
+import * as Yup from 'yup';
+import BottomSheetModal from '../components/BottomSheetModal';
 import Screen from '../components/Screen';
 import {Form, FormField, SubmitButton} from '../components/forms';
-import {useDispatch, useSelector} from 'react-redux';
-import {updateUser} from '../store/UserReducer';
-import {useNavigation} from '@react-navigation/native';
-import defaultStyles from '../config/styles';
-import {useTranslation} from 'react-i18next';
-import '../translation/i18n';
-import BottomSheetModal from '../components/BottomSheetModal';
 import {LANGUAGES} from '../constants/Strings';
-import colors from '../config/colors';
-import {save} from '../utils/SharedPreferences';
-import PreferenceKeys from '../constants/PreferenceKeys';
+import {SPECIAL_CHARACTER_REG, UPPER_CASE_REG} from '../constants/Validation';
+import {MOVIES_SCREEN} from '../navigations/Routes';
+import {updateUser} from '../store/UserReducer';
+import colors from '../theme/colors';
+import defaultStyles from '../theme/styles';
+import '../translation/i18n';
+import {changeLanguage, restartAPP} from '../utils/helper';
 
+//Function 'validationSchema' which is assigned the result of invoking
+//a function t and returning a Yup validation schema object.
+//The schema object is defined as having two fields, email and password.
+//The email field is defined using Yup string validation.
 const validationSchema = t =>
   Yup.object().shape({
     email: Yup.string()
       .max(50, t('email_50'))
       .required(t('emailRequired'))
-      .email()
+      .email(t('emailValid'))
       .label('Email'),
     password: Yup.string()
       .required(t('passwordRequired'))
       .min(8, t('password_8'))
       .max(15, t('password_15'))
-      .matches(/^(?=.*[A-Z])/, t('passwordUpperCase'))
-      .matches(/^(?=.*[!@#\$%\^&\*])/, t('passwordSpecialCharacter'))
+      .matches(UPPER_CASE_REG, t('passwordUpperCase'))
+      .matches(SPECIAL_CHARACTER_REG, t('passwordSpecialCharacter'))
       .label('Password'),
   });
 
@@ -48,13 +51,12 @@ function LoginScreen(props) {
   const {selectedLanguage} = useSelector(state => state.languages);
   const [modalVisible, setModalVisible] = useState(false);
 
+  //Function 'hanleLanguageSelection', will close the language modal
+  //and force apply the selected langauge text on the screen.
   const hanleLanguageSelection = async option => {
-    if (selectedLanguage.code !== option.code) {
-      await save(PreferenceKeys.LANGUAGE, JSON.stringify(option));
-      await I18nManager.forceRTL(option.code === LANGUAGES[1].code);
-      RNRestart.restart();
-    }
     setModalVisible(false);
+    await changeLanguage(selectedLanguage, option);
+    restartAPP();
   };
 
   return (
@@ -84,7 +86,7 @@ function LoginScreen(props) {
             dispatch(updateUser(JSON.stringify(values)));
             navigation.reset({
               index: 0,
-              routes: [{name: 'MoviesScreen'}],
+              routes: [{name: MOVIES_SCREEN}],
             });
           }}
           validationSchema={validationSchema.bind(this, t)}>
@@ -140,7 +142,7 @@ const styles = StyleSheet.create({
     zIndex: 1000,
   },
   button: {
-    width: 280,
+    width: '100%',
     marginTop: 15,
     alignSelf: 'center',
   },

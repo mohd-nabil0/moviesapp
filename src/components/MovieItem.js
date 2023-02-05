@@ -1,9 +1,9 @@
 import React from 'react';
 import {Text, StyleSheet} from 'react-native';
-import {imageApi} from '../api/Api';
+import {imageApi} from '../netwrok/Api';
 import FastImage from 'react-native-fast-image';
-import defaultStyles from '../config/styles';
-import colors from '../config/colors';
+import defaultStyles from '../theme/styles';
+import colors from '../theme/colors';
 import Card from './Card';
 
 const MovieItem = ({movie}) => {

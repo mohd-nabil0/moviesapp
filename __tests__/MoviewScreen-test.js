@@ -4,6 +4,11 @@ import {getMovies} from '../src/store/MovieReducer';
 import MovieScreen from '../src/screens/MoviesScreen';
 import {render, fireEvent} from '@testing-library/react-native';
 
+jest.mock('@react-navigation/native', () => ({
+  useNavigation: jest.fn().mockReturnValue({
+    reset: jest.fn(),
+  }),
+}));
 jest.mock('react-redux', () => {
   return {
     useSelector: jest.fn().mockReturnValue({
