@@ -29,7 +29,7 @@ const SplashScreen = props => {
   useEffect(() => {
     dispatch(getUser());
     dispatch(getLanguage());
-  }, []);
+  }, [dispatch]);
 
   useEffect(() => {
     handleLanguage();
