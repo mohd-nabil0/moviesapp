@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {memo} from 'react';
 import {Text, StyleSheet} from 'react-native';
 import {imageApi} from '../netwrok/Api';
 import FastImage from 'react-native-fast-image';
@@ -46,4 +46,4 @@ const styles = StyleSheet.create({
     marginHorizontal: 12,
   },
 });
-export default MovieItem;
+export default memo(MovieItem);
